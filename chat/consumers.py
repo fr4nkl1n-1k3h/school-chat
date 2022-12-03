@@ -7,13 +7,13 @@ from .models import Messages , Threads , CustomUser
 class GroupMessageConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.room_group_name = 'chat_%s_group' % self.room_name
-       
+        self.room_group_name = f'chat_{self.room_name}_group'
+
         self.thread_check = await self.check_thread(self.room_name)
 
         if self.thread_check == False:
             await self.save_thread(name=self.room_name)
-     
+
         # Join room group
         await self.channel_layer.group_add(
             self.room_group_name,
@@ -85,10 +85,7 @@ class GroupMessageConsumer(AsyncWebsocketConsumer):
     #checking maybe thread already existed in database
     @database_sync_to_async
     def check_thread(self, name):
-        if Threads.objects.filter(name=name).count() > 0 :
-         return True
-        else:
-            return False
+        return Threads.objects.filter(name=name).count() > 0
 
 
     #saving current thread to database
@@ -190,10 +187,7 @@ class DirectMessageConsumer(AsyncWebsocketConsumer):
     #checking maybe thread already existed in database
     @database_sync_to_async
     def check_thread(self, name):
-        if Threads.objects.filter(name=name).count() > 0 :
-         return True
-        else:
-            return False
+        return Threads.objects.filter(name=name).count() > 0
 
 
     #saving current thread to database

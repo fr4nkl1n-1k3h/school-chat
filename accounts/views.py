@@ -75,31 +75,31 @@ def login_page(request):
 
 
 def password_reset(request):
-    if request.method == 'POST':
-        user_email = request.POST['email']
-        User = get_user_model()
-        confirm_mail = User.objects.filter(email=user_email)
-        if confirm_mail.count() > 0 :
-            current_site = get_current_site(request) 
-            token = account_activation_token() 
-            TokenActivation.objects.create(user_id=request.user, token=token)
-            mail_subject = 'Password Reset'  
-            message = render_to_string('accounts/password-reset-email.html', {  
-                'user': request.user,  
-                'domain': current_site.domain,  
-                'uid':urlsafe_base64_encode(force_bytes(request.user.id)),  
-                'token':token,  
-            })  
-            to_email = user_email  
-            email = EmailMessage(  
-                        mail_subject, message, to=[to_email]  
-            )  
-            email.send() 
-            print(token)
-            print(request.user) 
-            return HttpResponse('Please confirm your email address to complete the registration')  
-    
+    if request.method != 'POST':
         return render(request, 'accounts/password-reset.html')
+    user_email = request.POST['email']
+    User = get_user_model()
+    confirm_mail = User.objects.filter(email=user_email)
+    if confirm_mail.count() > 0 :
+        current_site = get_current_site(request) 
+        token = account_activation_token() 
+        TokenActivation.objects.create(user_id=request.user, token=token)
+        mail_subject = 'Password Reset'  
+        message = render_to_string('accounts/password-reset-email.html', {  
+            'user': request.user,  
+            'domain': current_site.domain,  
+            'uid':urlsafe_base64_encode(force_bytes(request.user.id)),  
+            'token':token,  
+        })  
+        to_email = user_email  
+        email = EmailMessage(  
+                    mail_subject, message, to=[to_email]  
+        )  
+        email.send() 
+        print(token)
+        print(request.user) 
+        return HttpResponse('Please confirm your email address to complete the registration')  
+
     return render(request, 'accounts/password-reset.html')
 
 
@@ -113,7 +113,7 @@ def password_reset_confirm(request, uidb64 , token ):
     except(TypeError, ValueError, OverflowError, User.DoesNotExist):  
         user = None  
     if user is not None and check_token(user, token): 
-          
+
         return redirect('/account/password_reset/done')
     else:  
         return HttpResponse('Activation link is invalid!')
